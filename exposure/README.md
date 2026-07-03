@@ -56,9 +56,9 @@ which validates internally against `coverage_table_persona_dataset(load_persona_
 
 ```python
 {
-    "persona_a": "evil",
-    "persona_b": "assistant",   # default alternative
-    "category": "C",
+    "persona_a": "assistant",
+    "persona_b": "evil",   # default alternative
+    "category": "A",
     "num_rounds": 10,
     "posts_per_round": 5,
     "num_a": 0,   # default: 0 posts from persona_a per round
@@ -78,8 +78,8 @@ round without reuse, rather than silently falling back to repeats. Deterministic
 
 ```python
 {
-    "category": "C",
-    "post_test_options": ["assistant", "evil-mild", "evil-high"],   # 2 or more
+    "category": "A",
+    "post_test_options": ["evil-mild", "evil-high"],   # 2 or more -- both from persona_b here
     "num_questions": 5,
     "reveal_question": True,
 }

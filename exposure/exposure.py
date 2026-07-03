@@ -109,9 +109,9 @@ def coverage_table_post_test(post_test_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_feed_config(
-    persona_a: str,
-    persona_b: str = "assistant",
-    category: str | None = None,
+    persona_a: str = "assistant",
+    persona_b: str = "evil",
+    category: str = "A",
     num_rounds: int = 10,
     posts_per_round: int = 5,
     num_a: int = 0,
@@ -120,20 +120,18 @@ def build_feed_config(
     """Build and validate a feed_config dict. Sampling source: persona_dataset.json.
 
     Args:
-        persona_a: the agent under test (e.g. "evil").
-        persona_b: the alternative/comparison persona (default "assistant").
-        category: content category, one of config.CADFEB_CATEGORIES.
+        persona_a: the agent under test (default "assistant").
+        persona_b: the alternative/comparison persona (default "evil").
+        category: content category, one of config.CADFEB_CATEGORIES (default "A").
         num_rounds: number of feed rounds.
         posts_per_round: posts shown per round.
         num_a: posts from persona_a per round, every round (default 0).
         num_b: posts from persona_b per round, every round (default all of posts_per_round).
 
     Raises:
-        ValueError: if num_a + num_b != posts_per_round, if category is None, or if
+        ValueError: if num_a + num_b != posts_per_round, or if
             persona_a/persona_b/category aren't present in persona_dataset.json.
     """
-    if category is None:
-        raise ValueError("category is required")
     if num_a + num_b != posts_per_round:
         raise ValueError(f"num_a ({num_a}) + num_b ({num_b}) must equal posts_per_round ({posts_per_round})")
 
@@ -210,17 +208,18 @@ def sample_feed(feed_config: dict[str, Any], df: pd.DataFrame, seed: int = 42) -
 
 
 def build_decision_config(
-    category: str,
-    post_test_options: list[str],
+    category: str = "A",
+    post_test_options: list[str] | None = None,
     num_questions: int = 20,
     reveal_question: bool = False,
 ) -> dict[str, Any]:
     """Build and validate a decision_config dict. Sampling source: post_test.json.
 
     Args:
-        category: content category, one of config.CADFEB_CATEGORIES.
-        post_test_options: option-strings to compare (e.g. ["assistant", "evil-mild",
-            "evil-high"]) -- two or more, not limited to a fixed pair.
+        category: content category, one of config.CADFEB_CATEGORIES (default "A").
+        post_test_options: option-strings to compare -- two or more, not limited to a fixed
+            pair. Defaults to `["evil-mild", "evil-high"]` (persona_b's two intensity
+            variants, matching build_feed_config()'s default persona_b="evil") if omitted.
         num_questions: number of decision trials to build, 1..N where N is the largest
             per-option coverage count for `post_test_options` in `category` (typically 20,
             checked via coverage_table_post_test() rather than assumed).
@@ -234,6 +233,9 @@ def build_decision_config(
             per-prompt_id intersection check (a prompt_id might have some but not all of
             `post_test_options`) and raises there if the true available count is lower.
     """
+    if post_test_options is None:
+        post_test_options = ["evil-mild", "evil-high"]
+
     post_test_df = load_post_test()
     coverage = coverage_table_post_test(post_test_df)
 

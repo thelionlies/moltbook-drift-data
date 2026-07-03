@@ -25,18 +25,6 @@ pointed at OpenRouter's base URL. Judge/prompt-generation calls default to
 `openai/gpt-4o-mini` (overridable via `JUDGE_MODEL` in `.env`); persona-response generation
 uses `qwen/qwen3-32b`.
 
-## ⚠️ Schema verification caveat
-
-The column names used throughout this codebase (`post_id`, `content`, `category`,
-`toxicity`) and the category/toxicity label sets in [`src/config.py`](src/config.py) are a
-**best guess** based on the dataset card — not a verified schema. `notebooks/01_load_data_eda.ipynb`
-prints the actual `.column_names` and value counts from
-`load_dataset("TrustAIRLab/Moltbook", "posts", split="train")` (the dataset ships two
-configs, `posts` and `submolts` — we want `posts`). If the real schema differs from
-`src/config.py`, fix the constants there before proceeding — every other module reads
-column names from `config.py` rather than hardcoding strings, so a single fix propagates
-everywhere.
-
 ## Pipeline
 
 1. **`notebooks/01_load_data_eda.ipynb`** — downloads the raw dataset (cached to
@@ -90,12 +78,20 @@ everywhere.
    spread across the 9 matched responses). Output: `results/persona_responses/<mode>.jsonl`.
 
 7. **`notebooks/07_organize_post_test.ipynb`** — consolidates all 9
-   `results/persona_responses/<mode>.jsonl` files into one entry per prompt:
-   `{"prompt_id": ..., "category": ..., "responses": {"assistant": "...", "pirate": "...", ...}}`.
+   `results/persona_responses/<mode>.jsonl` files into one entry per prompt, joining in the
+   original prompt text from stage 5:
+   `{"prompt_id": ..., "category": ..., "prompt_text": ..., "responses": {"assistant": "...", "pirate": "...", ...}}`.
    Includes a summary EDA (counts per persona × category) and the same word-count parity
    check as stage 6, applied across the compiled set. Output: **`results/post_test.jsonl`**.
-   This is the final deliverable of this pipeline — the downstream exposure/choice experiment
-   is future work, out of scope here.
+   This is the final deliverable of this pipeline.
+
+## `exposure/`
+
+A standalone extension, separate from the 7-notebook pipeline above — reads
+`persona_dataset.json` and `post_test.json` (never writes to either) and builds/previews
+sampling configs for a future exposure/choice experiment. No LLM API calls. See
+[`exposure/README.md`](exposure/README.md) for the full schema reference and
+[`exposure/exposure_runner.ipynb`](exposure/exposure_runner.ipynb) to try it.
 
 All notebooks are safe to interrupt and re-run at any point:
 
@@ -167,6 +163,10 @@ notebooks/
 archive/
   notebooks/    superseded judge-run notebooks (runs 1-3) and exploratory EDA, not re-run
   results/      superseded judge-run results, pre-Moltbook-native-fix backups
+exposure/
+  exposure.py               feed_config/decision_config builders + samplers (see exposure/README.md)
+  exposure_runner.ipynb       load -> coverage -> configure -> run
+  exposure_test.ipynb           full walkthrough + error-case demos
 ```
 
 ## Known gotchas (still relevant to the current pipeline)

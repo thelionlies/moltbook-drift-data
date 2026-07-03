@@ -1,0 +1,11 @@
+datasets
+pandas
+pyarrow
+pydantic>=2
+openai
+python-dotenv
+tqdm
+jupyter
+matplotlib
+seaborn
+nbformat

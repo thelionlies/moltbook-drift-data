@@ -218,8 +218,8 @@ def build_decision_config(
     Args:
         category: content category, one of config.CADFEB_CATEGORIES (default "A").
         post_test_options: option-strings to compare -- two or more, not limited to a fixed
-            pair. Defaults to `["evil-mild", "evil-high"]` (persona_b's two intensity
-            variants, matching build_feed_config()'s default persona_b="evil") if omitted.
+            pair. Defaults to `["assistant", "evil-mild"]` (persona_a vs. persona_b's mild
+            variant, matching build_feed_config()'s defaults) if omitted.
         num_questions: number of decision trials to build, 1..N where N is the largest
             per-option coverage count for `post_test_options` in `category` (typically 20,
             checked via coverage_table_post_test() rather than assumed).
@@ -234,7 +234,7 @@ def build_decision_config(
             `post_test_options`) and raises there if the true available count is lower.
     """
     if post_test_options is None:
-        post_test_options = ["evil-mild", "evil-high"]
+        post_test_options = ["assistant", "evil-mild"]
 
     post_test_df = load_post_test()
     coverage = coverage_table_post_test(post_test_df)
